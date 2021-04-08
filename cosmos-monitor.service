@@ -1,0 +1,15 @@
+[Unit]
+Description=Cosmos Monitor
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+User=<USER>
+TimeoutStopSec=90s
+WorkingDirectory=<PATH>/cosmos-monitor
+ExecStart=/bin/bash <PATH>/cosmos-monitor/start.sh
+
+[Install]
+WantedBy=multi-user.target
