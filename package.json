@@ -22,11 +22,11 @@
     "test",
     "monitor"
   ],
-  "author": "ChainLayer",
-  "homepage": "https://github.com/chainlayer/cosmos-sdk-monitor",
+  "author": "Tessellated Geometry",
+  "homepage": "https://github.com/TessellatedGeometry/Cosmos-Monitor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chainlayer/cosmos-sdk-monitor.git"
+    "url": "https://github.com/TessellatedGeometry/Cosmos-Monitor.git"
   },
   "private": true,
   "license": "MIT"
