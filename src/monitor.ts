@@ -7,17 +7,13 @@ const PAGER_DUTY_SERVICE = ""
 const PAGER_DUTY_EMAIL = ""
 
 // RPC URLs
-const remoteAPI = "https://api.cosmos.network/blocks/latest"
 const localAPI = "http://127.0.0.1:1317/blocks/latest"
 
 // HEADERS
 const HEADERS = { "headers": { "Content-Type": "application/json" } };
 
-// Amount to be behind.
-const ACCEPTABLE_LAG = 5
-
-// Amount to allow the remote to be behind before paging
-const ACCEPTABLE_REMOTE_LAG = -5000
+// Amount of seconds allowed to be out of date before paging
+const ACCEPTABLE_DELTA_SECS = 20 * 60 // 20 min
 
 // Amount to not sign
 const ACCEPTABLE_CONSECUTIVE_MISS = 5
@@ -49,31 +45,15 @@ const monitor = async () => {
       }
       console.log("> Done Local Fetch")
 
-      console.log("> Fetching Remote API Information")
-      const remoteResult = await WebRequest.get(remoteAPI, HEADERS)
-      if (remoteResult.statusCode !== 200) {
-        await page("Remote API is down", `${remoteResult.statusCode}: ${remoteResult.content}`, 5 * 60, `${remoteResult.statusCode}`)
-      }
-      console.log("> Done Remote Fetch")
-
       const localData = JSON.parse(localResult.content)
-      const remoteData = JSON.parse(remoteResult.content)
 
-      // Make sure we're relatively close
-      const localHeight = parseInt(localData.block.header.height)
-      const remoteHeight = parseInt(remoteData.block.header.height)
-      console.log('> Local Height: ' + localHeight)
-      console.log('> Remote Height: ' + remoteHeight)
-
-      const lag = remoteHeight - localHeight
-      if (lag !== 0) { console.log('> Lag: ' + lag) }
-
-      if (lag > ACCEPTABLE_LAG) {
-        await page("Node is lagging", "Local: " + localHeight + ", Remote: " + remoteHeight, 5 * 60, "lag")
-      }
-
-      if (lag < ACCEPTABLE_REMOTE_LAG) {
-        await page("Remote node is lagging", "Local: " + localHeight + ", Remote: " + remoteHeight, 5 * 60, "remotelag")
+      // Make sure we're recent
+      const blockTime = Date.parse(localData.block.header.time) / 1000
+      const blockHeight = localData.block.header.level
+      const currentTime = Date.now() / 1000
+      const deltaTime = Math.abs(currentTime - blockTime)
+      if (deltaTime > ACCEPTABLE_DELTA_SECS) {
+        await page("Node is lagging", `System Time: ${currentTime}, Block Time: ${blockTime}. Is the Osmosis network stalled?`, 5 * 60, "node-lag")
       }
 
       let found = false
@@ -85,10 +65,10 @@ const monitor = async () => {
         }
       }
 
-      if (found = true) {
+      if (found == true) {
         consecutiveMisses = 0
       } else {
-        console.log("Missed sig in block " + remoteHeight)
+        console.log("Missed sig in block " + blockHeight)
         consecutiveMisses++
       }
 
