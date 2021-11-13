@@ -49,7 +49,7 @@ const monitor = async () => {
 
       // Make sure we're recent
       const blockTime = Date.parse(localData.block.header.time) / 1000
-      const blockHeight = localData.block.header.level
+      const blockHeight = localData.block.header.height
       const currentTime = Date.now() / 1000
       const deltaTime = Math.abs(currentTime - blockTime)
       if (deltaTime > ACCEPTABLE_DELTA_SECS) {
