@@ -60,7 +60,7 @@ const monitor = async () => {
       const precommits = localData.block.last_commit.signatures
       for (let i = 0; i < precommits.length; i++) {
         const precommit = precommits[i]
-        if (precommit.validatorAddress === VALIDATOR_ADDRESS) {
+        if (precommit.validator_address === VALIDATOR_ADDRESS) {
           found = true
         }
       }
