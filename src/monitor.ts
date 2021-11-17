@@ -100,29 +100,33 @@ const sleep = async (seconds: number): Promise<void> => {
 
 
 const page = async (title, details, throttleSeconds = 60, alertKey) => {
-  alertKey = alertKey || title + details
+  try {
+    alertKey = alertKey || title + details
 
-  if (shouldAlert(pagerDutyThrottle, alertKey, throttleSeconds)) {
-    console.log(`Paging: ${title}`)
-    const payload = {
-      incident: {
-        title,
-        type: 'incident',
-        service: {
-          id: PAGER_DUTY_SERVICE,
-          type: 'service_reference',
+    if (shouldAlert(pagerDutyThrottle, alertKey, throttleSeconds)) {
+      console.log(`Paging: ${title}`)
+      const payload = {
+        incident: {
+          title,
+          type: 'incident',
+          service: {
+            id: PAGER_DUTY_SERVICE,
+            type: 'service_reference',
+          },
+          body: {
+            type: 'incident_body',
+            details,
+          },
+          incident_key: alertKey,
         },
-        body: {
-          type: 'incident_body',
-          details,
-        },
-        incident_key: alertKey,
-      },
-    };
+      };
 
-    if (pagerDutyClient != undefined) {
-      await pagerDutyClient.incidents.createIncident(PAGER_DUTY_EMAIL, payload)
+      if (pagerDutyClient != undefined) {
+        await pagerDutyClient.incidents.createIncident(PAGER_DUTY_EMAIL, payload)
+      }
     }
+  } catch (e) {
+    console.log("FATAL: Paging API is failing!")
   }
 }
 
